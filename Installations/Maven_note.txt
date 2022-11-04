@@ -1,0 +1,17 @@
+for jar:
+#mvn archetype:generate
+
+1909: remote -> org.apache.maven.archetypes:maven-archetype-quickstart
+
+for war:
+#mvn archetype:generate |grep maven-archetype-webapp
+1914: remote -> org.apache.maven.archetypes:maven-archetype-webapp
+
+============
+Resource installation steps:
+
+https://github.com/yankils/Simple-DevOps-Project
+
+------------
+Project repo:
+ https://github.com/yankils/hello-world
