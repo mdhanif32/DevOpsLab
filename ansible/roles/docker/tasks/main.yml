@@ -1,0 +1,9 @@
+--- 
+
+- name: Execute the steps on Ubuntu
+  include: ubuntu.yml
+  when: ansible_distribution == "Ubuntu"
+
+#- name: Execute the steps on Centos
+#  include: centos.yml
+#  when: ansible_distribution == "CentOS"

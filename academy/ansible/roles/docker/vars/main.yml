@@ -1,0 +1,5 @@
+---
+# vars file for docker-install
+java: "openjdk-11-jdk"
+jenkins:
+    repo_url: "https://pkg.jenkins.io/debian-stable/jenkins.io.key"

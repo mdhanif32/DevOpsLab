@@ -1,0 +1,33 @@
+---
+   - name: Download jenkins repo apt URL
+     apt_key:
+       url: "{{docker.repo_url}}"
+       state: present
+     become: yes
+
+   - name: Ensure the repository is present
+     apt_repository: repo='deb https://pkg.jenkins.io/debian-stable binary/' 
+     state: present
+     become: yes
+   - name: update apt cache
+     apt:
+       update_cache: yes
+       state: latest
+   - name: Install Java
+     apt:
+       name: "{{java}}"
+       state: present
+
+   - name: Install Jenkins
+     apt:
+       name: jenkins
+       state: latest
+   - name: Starting Jenkins
+     service:
+           name: jenkins
+           enabled: true
+           state: started
+              
+
+
+             

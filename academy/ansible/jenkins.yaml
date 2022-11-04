@@ -1,0 +1,70 @@
+jenkins:
+  systemMessage: "Configured as Code"
+
+tool:
+  dockerTool:
+    installations:
+    - name: "docker"
+      properties:
+      - installSource:
+          installers:
+          - fromDocker:
+              version: "latest"
+  git:
+    installations:
+    - home: "git"
+      name: "Default"
+  maven:
+    installations:
+    - name: "maven3"
+      properties:
+      - installSource:
+          installers:
+          - maven:
+              id: "3.8.1"
+  mavenGlobalConfig:
+    globalSettingsProvider: "standard"
+    settingsProvider: "standard"
+  sonarRunnerInstallation:
+    installations:
+    - name: "sonarqube"
+      properties:
+      - installSource:
+          installers:
+          - sonarRunnerInstaller:
+              id: "4.6.2.2472"   
+
+credentials:
+  system:
+    domainCredentials:
+    - credentials:
+      - usernamePassword:
+          id: "mastek"
+          password: "{AQAAABAAAAAQPcDfkzkVJlP6rYChSQLzn2ojhvtM/B78eitJQ5wkx6Q=}"
+          scope: GLOBAL
+          username: "shiv14862"
+
+jobs:
+  - script: >
+      job('super-seed') {
+        scm {
+          git {
+            remote {
+            url ('https://github.com/MastekLimited/JCASC-jobdsl.git')
+              credentials('mastek')
+            }
+          }
+        }
+          steps {
+          dsl {
+            external('jobdsl/**/*.groovy')
+            ignoreExisting(false)
+            removeAction("IGNORE")
+            removeViewAction("IGNORE")
+            }
+          }
+          }
+
+security:
+  globaljobdslsecurityconfiguration:
+    useScriptSecurity: false

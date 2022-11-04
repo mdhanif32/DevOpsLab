@@ -1,0 +1,53 @@
+---
+# tasks file for container-install
+
+- name: Create the directories
+  file:
+    path: "/vagrant/sandbox/{{ item }}"
+    mode: '0755'
+    state: directory
+  with_items:
+  - jenkins
+  - sonar
+#  - nexus
+
+
+- name: building jenkins image
+  shell: docker build  -t jenkins:jcasc .
+
+- name: Create Jenkins container
+  docker_container:
+    name: jenkins
+    image: jenkins:jcasc
+    state: started
+    recreate: no
+    published_ports:
+    - 8080:8080
+    volumes:
+    - /vagrant/sandbox/jenkins:/var/jenkins
+
+- name: Create Sonarqube container
+  docker_container:
+    name: sonarqube
+    image: sonarqube:lts
+    state: started
+    recreate: no
+    published_ports:
+    - 9000:9000
+    volumes:
+    - /vagrant/sandbox/sonar/data:/opt/sonarqube/data
+    - /vagrant/sandbox/sonar/logs:/opt/sonarqube/logs
+    - /vagrant/sandbox/sonar/extensions:/opt/sonarqube/extensions
+
+#- name: Create Nexus container
+#  docker_container:
+#    name: nexus
+#    image: sonatype/nexus3:latest
+#    state: started
+#    recreate: no
+#    published_ports:
+#    - 8081:8081
+#    env:
+#      INSTALL4J_ADD_VM_PARAMS: "-Xms2703m -Xmx2703m -XX:MaxDirectMemorySize=2703m -Djava.util.prefs.userRoot=/nexus-data"
+#        volumes:
+#            - /vagrant/sandbox/nexus/data:/nexus-data

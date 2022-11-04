@@ -1,0 +1,9 @@
+--- 
+- hosts: localhost
+  user: ansible
+  become: yes
+  connection: ssh
+
+  roles: 
+    - docker
+    - container

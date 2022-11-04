@@ -1,0 +1,1 @@
+{"virtualbox":{"/home/vagrant":{"create":true,"guestpath":"/home/vagrant","hostpath":"D:/DevOpsLab/academy","disabled":false,"__vagrantfile":true},"/vagrant":{"guestpath":"/vagrant","hostpath":"D:/DevOpsLab","disabled":false,"__vagrantfile":true}}}

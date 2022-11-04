@@ -1,0 +1,4 @@
+- name: academy
+  ram: 6044
+  ip: 192.168.51.32
+  network_type: public
