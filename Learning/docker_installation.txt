@@ -1,0 +1,280 @@
+#!/bin/bash
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum -y install docker-ce
+systemctl start docker
+systemctl enable docker
+
+=================
+
+[root@master ~]# docker swarm init --advertise-addr 172.31.65.179   (IP address of master node)
+Swarm initialized: current node (pmjkth3kpdezrjerlkdx7giuh) is now a manager.
+
+To add a worker to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-1-2ziqwzxhsz2aj9wnbp7jax63659ll831zsf65loseasx1c0t0s-6ppc694izmdsu2xxv4ca29gou 172.31.65.179:2377
+
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+
+==============
+
+execute the command on master node to check join available nodes:
+
+#docker node ls
+#docker service ls
+
+#docker service create --name webserver --replicas 1 nginx  (to create service)
+#docker service ps webserver
+#docker service rm webserver
+
+#docker service  scale webserver=5
+
+
+====================================================Document - Scaling Service CLI Command=================================================================
+
+Scaling Up Operation
+
+docker service scale webserver=5
+
+Scaling Down Operation
+
+docker service scale webserver=1
+
+
+Verify Service Details:
+
+docker service ps webserver
+
+Remove Service After Practical:
+
+docker service rm webserver
+
+==================================================Document - Multiple Approaches for Scaling===============================================================
+Two Approaches:
+
+docker service scale service01=1  
+docker service update --replicas 1 service02  (Only one service can be scale through this command)
+
+Scaling Multiple Services Together:
+
+docker service scale service01=3 service02=3 
+
+=============
+
+to create global service which run on all three nodes:
+
+#docker service create --name antivirus --mode global -dt ubuntu
+
+
+========================================================Document - Global Service CLI Command=======================================================
+Global Service
+
+#docker service create --name antivirus --mode global -dt ubuntu
+
+#docker service ps antivirus
+
+Replicated Service
+
+#docker service create myreplica --replicas 1 nginx
+
+
+====================================================Document - Drain CLI Commands====================================================================
+Change the Node Availability to Drain
+
+#docker node update --availability drain swarm03
+
+Verify Node status
+
+#docker node ls
+
+Change the Node Availability To Active
+
+#docker node update --availability active swarm03
+
+===============================================Document - Inspecting Services and Nodes==============================================================================
+Inspecting a Service
+
+#docker service inspect demotroubleshoot
+#docker service inspect demotroubleshoot --pretty
+
+Inspecting a Node
+
+#docker node inspect swarm01 
+#docker node inspect swarm01 -pretty
+
+
+======================================================Document - Publish Port at Service===================================
+Create a Service by Publishing port
+
+#docker service create --name mywebserver --replicas 1 --publish 8080:80 nginx
+
+Verify Ports in Linux Server
+
+#netstat -ntlp
+
+Verify IP address
+
+#ifconfig eth0
+
+Curl Request to IP on port 8080
+
+#curl 142.93.214.57:8080
+
+=======================================================Docker Compose=======================================================
+
+Compose is a tool to defining and running multi-container Docker applications.
+
+1.With compose , we use a YAML file to configure our application's services.
+
+2.We can start all services with single command-  #docker compose up
+
+3.We can stop all the services with single command- #docker compose down
+
+#mkdir docker-compose
+#cd docker-compose
+#vi docker-compose.yml
+
+#docker-compose config
+#docker-compose -d up
+#docker-compose up -d
+
+================,
+
+Document - Docker Compose YAML
+Documentation Referred:
+
+https://docs.docker.com/compose/install/
+
+Commands used for Installing Docker Compose in Linux:
+
+curl -L "https://github.com/docker/compose/releases/download/1.25.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+Sample Wordpress Compose file used:
+
+Step 1: Create a new directory named wordpress
+
+#mkdir wordpress
+#cd wordpress
+
+
+Step 2: Create a file named docker-compose.yml and store the below snippet there:
+
+
+
+version: '3.3'
+ 
+services:
+   db:
+     image: mysql:5.7
+     volumes:
+       - db_data:/var/lib/mysql
+     restart: always
+     environment:
+       MYSQL_ROOT_PASSWORD: somewordpress
+       MYSQL_DATABASE: wordpress
+       MYSQL_USER: wordpress
+       MYSQL_PASSWORD: wordpress
+ 
+   wordpress:
+     depends_on:
+       - db
+     image: wordpress:latest
+     ports:
+       - "8000:80"
+     restart: always
+     environment:
+       WORDPRESS_DB_HOST: db:3306
+       WORDPRESS_DB_USER: wordpress
+       WORDPRESS_DB_PASSWORD: wordpress
+       WORDPRESS_DB_NAME: wordpress
+volumes:
+    db_data: {}
+
+
+Start Docker Compose
+
+#docker-compose up -d
+
+Bring Down application started via Docker Compose
+
+#docker-compose down
+
+
+=============================================Document - Mount Volumes with Swarm================================
+Create Service with Volume
+
+#docker service create --name myservice --mount type=volume,source=myvolume,target=/mypath nginx
+
+Verify the Host where service is created:
+
+#docker service ps myservice
+
+Connect to Container and Verify Mount
+
+#docker container exec -it [CONTAINER-ID] bash
+ls -l /
+
+Verify Volume Information
+
+#docker volume ls
+
+Remove Service
+
+#docker service rm myservice
+
+
+===========================================================Document - Setting Constraints=============================================
+Creating Service with Node Label Constraints
+
+docker service create --name myconstraint --constraint node.labels.region==blr --replicas 3 nginx
+
+Add a Label to Node:
+
+docker node update --label-add region=mumbai swarm03
+
+Running Nodes in Mumbai Region
+
+docker service create --name myconstraint --constraint node.labels.region==mumbai --replicas 3 nginx
+
+
+
+==============================================================Overlay Network====================================================
+
+The Overlay Network driver creates a distributed network among multiple Docker daemon hosts.
+
+Overlay network allows containers to communicate securely.
+
+Note: When we initialize docker swarm overlay network created by default.
+
+
+Document - Custom Overlay Networks
+Create Service with Custom Overlay Network:
+
+#docker service create --name myoverlay --network mynetwork --replicas 3 nginx
+
+Verify Networks:
+
+#docker network ls
+
+Find the IP of Container
+
+#docker container inspect [CONTAINER-NAME]
+
+Connect to Container and Install Ping
+
+#docker container exec -it [CONTAINER-NAME]
+#apt-get update && apt-get install iputils-ping
+ping [IP]
+
+
+===============================================Document - Forcing New Cluster=============================
+
+
+Incase master node get down then have to worker node as master.
+#docker swarm init --force-new-cluster --advertise-addr 206.189.139.211:2377
+
+
+
+
+
+
+

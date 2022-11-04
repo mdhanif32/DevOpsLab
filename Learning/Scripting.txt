@@ -1,0 +1,41 @@
+===
+$? contains the return code of the previously executed command.
+
+vagrant@academy:/vagrant$ hi
+-bash: hi: command not found
+vagrant@academy:/vagrant$ echo "$?"
+127
+vagrant@academy:/vagrant$ ls -lrt /hello
+ls: cannot access '/hello': No such file or directory
+vagrant@academy:/vagrant$ echo "$?"
+2
+vagrant@academy:/vagrant$
+
+
+EXAMPLE:
+===============================
+#./bin/bash
+HOST="google.com"
+ping -c 3 $HOST
+if [ "$?" -eq "0" ]
+then
+        echo "$HOST reachable."
+else
+        echo "$HOST unreachable."
+fi
+======================================
+
+&& = AND
+mkdir /tmp/back && cp test.txt /tmp/back
+
+if first command executed successfuly only then 2nd command will be run
+
+========================================
+
+|| = OR
+
+cp test.txt /tmp/bak/ || cp test.txt /tmp
+
+if first command failed then 2nd command will be executed vice versa
+
+

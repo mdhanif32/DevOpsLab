@@ -1,0 +1,18 @@
+1.Azure Boards:
+Helps in planing, tracking and working with work items across teams.
+
+2.Azure Repos:
+Managing your souce code repository.
+
+3.Azure pipeline:
+Helps to work with you Continuous Integration and Continuous Deployment.
+
+4.Azure Test plans:
+This is used for manual and exploratory testing.
+
+5.Azure Artifacts:
+This is used to managing your packages.
+
+
+
+

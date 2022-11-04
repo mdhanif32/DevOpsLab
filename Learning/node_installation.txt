@@ -1,0 +1,45 @@
+#Node binary path: https://nodejs.org/dist
+curl -L -o /root/node-v16.14.2-linux-x64.tar.xz \
+   https://nodejs.org/dist/v16.14.2/node-v16.14.2-linux-x64.tar.xz
+
+
+sudo mkdir -p /usr/local/lib/nodejs \
+   && sudo tar -xJvf /root/node-v16.14.2-linux-x64.tar.xz \
+   -C /usr/local/lib/nodejs
+
+less ~/.profile
+
+vi ~/.profile
+VERSION=v16.14.2
+DISTRO=linux-x64
+export PATH=/usr/local/lib/nodejs/node-v14.18.0-linux-x64/bin:$PATH
+
+
+++++++++++++++++++++
+curl -L -o /root/node-v12.22.12-linux-x64.tar.xz \
+   https://nodejs.org/dist/v12.22.12/node-v12.22.12-linux-x64.tar.xz
+
+
+sudo mkdir -p /usr/local/lib/nodejs \
+   && sudo tar -xJvf /root/node-v12.22.12-linux-x64.tar.xz \
+   -C /usr/local/lib/nodejs
+
+#sudo n v12.22.12
+#hash -r
+#node --version
++++++++++++++++++++++++++++++++
+
+node -v
+. ~/.profile # to refresh profile
+node -v
+npm version
+npx -v
+
+# To install latest node version
+
+sudo apt install nodejs -y
+sudo npm i -g n
+sudo n v12.22.12
+node -v
+hash -r
+node -v
