@@ -1,0 +1,83 @@
+https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.36.0.tar.gz
+
+curl -o git.tar.gz https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.36.0.tar.gz
+
+=====================
+JAVA 11 Installation:
+#sudo apt install openjdk-11-jre-headless
+#java -version
+==================
+
+
+JAVA_HOME:
+echo $JAVA_HOME
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+=============
+MAVAN:
+1. mkdir mavan
+   cd mavan
+2. wget https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+
+3. tar -xvf apache-maven-3.8.6-bin.tar.gz
+
+4. mv apache-maven-3.8.6 /opt/
+
+5.export PATH=/opt/apache-maven-3.8.6/bin:$PATH
+
+=====================
+Git:
+
+#sudo apt install dh-autoreconf libcurl4-gnutls-dev libexpat1-dev make gettext libz-dev libssl-dev libghc-zlib-dev
+ 
+#wget -c https://github.com/git/git/archive/refs/tags/v2.37.3.tar.gz -O - | sudo tar -xz -C /usr/src
+#cd /usr/src/git-*
+#sudo make prefix=/usr/local all
+#sudo make prefix=/usr/local install
+#git --version
+
+======================
+
+
+Sonar Setup:
+
+Follow this page:
+
+https://www.how2shout.com/linux/install-sonarqube-on-ubuntu-20-04-18-04-server/
+refrence: 
+https://stackoverflow.com/questions/47731102/cant-run-sonar-server-caused-by-elasticsearch-cannot-running-as-root
+https://michalwegrzyn.wordpress.com/2016/07/14/do-not-run-sonar-as-root/
+
+
+wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.4.0.54424.zip
+
+
+sonar.jdbc.username=sonaruser
+sonar.jdbc.password=sonar
+sonar.jdbc.url=jdbc:postgresql://localhost/sonardb
+
+psql --host=localhost --port=5432 --username=sonaruser --password --dbname=sonardb
+
+/opt/sonarqube/logs
+
+#groupadd sonar
+#useradd -c "Sonar System User" -d /opt/sonarqube -g sonar -s /bin/bash sonar
+#chown -R sonar:sonar /opt/sonarqube
+
+=========================================
+psql --host=education.cndderaoyzva.us-east-1.rds.amazonaws.com --port=5432 --username=edu --password --dbname=masterdb
+
+
+
+$mkdir flyway
+$cd flyway
+$ wget -qO- https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/9.1.6/flyway-commandline-9.1.6-linux-x64.tar.gz | tar xvz && sudo ln -s `pwd`/flyway-9.1.6/flyway /usr/local/bin 
+
+
+#sudo usermod -a -G root jenkins
+#sudo service jenkins restart
+$vi /etc/sudoers
+jenkins ALL=(ALL) NOPASSWD: ALL
+
+
+================
+https://www.postgresqltutorial.com/postgresql-tutorial/postgresql-insert/
