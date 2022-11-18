@@ -1,0 +1,151 @@
+def sendMail(String SUBJECT,String RECEIPIENTS,String MESSAGE){
+	sh 'echo "$MESSAGE" | mail -s "${SUBJECT}" "${RECEIPIENTS}" ';
+}
+
+def sendMailAttach(String SUBJECT,String RECEIPIENTS, String MESSAGE,String ATTACHMENTS){
+	sh 'echo "$MESSAGE" | mail -s "${SUBJECT}" -a ${ATTACHMENTS} "${RECEIPIENTS}" ';
+}
+
+def sendNotify(){
+	String body = "${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More info at: ${env.BUILD_URL}";
+	String subject= "Jenkins Build ${currentBuild.currentResult}: Job ${env.JOB_NAME}";
+	String to= "${params.TOMAIL}";
+	//sending mail after completion
+	try {
+		sendMail(subject,to,body);
+	} catch (error) {
+		echo "Mail Notify failed";
+	}	
+}
+
+def sendTestReportMail() {
+	String body =  "Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n Please find attached Test Report. \n More info at: ${env.BUILD_URL}";
+	String subject =  "Jenkins Build Job ${env.JOB_NAME} - Test Report";
+	String to =  "${params.TOMAIL}";
+	//Zipping the jacoco dir
+	sh 'ls -l';	
+	sh 'zip –r testreport.zip target/site ';
+	sendMailAttach(subject,to,body,'testreport.zip')
+}
+
+def healthCheck() {
+	def url= "https://${params.ENVURL}/priceservice/v2/healthcheck";
+	def response = httpRequest url;
+	echo "URL: "+ url +"---Status: "+ response.status;
+}
+
+pipeline {
+	agent any
+
+	environment {
+		BBCREDENTIALS = credentials('0ba7bccd-56fc-4c5d-9abc-80ce0656915a');
+		JENKINS_CREDENTIALS = credentials('jenkadm');
+		AWSCREDENTIALS = credentials('8d8a37fe-4e83-4b6e-b8da-38fc0f83bdb8');
+	}
+
+	// Set log rotation, timeout and timestamps in the console
+	options {
+		buildDiscarder(logRotator(numToKeepStr: '5'));
+		timestamps();
+		timeout(time: 10, unit: 'MINUTES');
+		copyArtifactPermission(env.JOB_NAME);
+	}
+	
+	parameters {
+		choice(choices: ['DEV' , 'CIT', 'SIT', 'UAT', 'PREPROD','PROD'],
+            description: 'Please select Environment?',
+            name: 'ENVNAME');
+		booleanParam(name: 'SONAR_USE', defaultValue: true,description: 'Sonar Enabled?');
+		booleanParam(name: 'SELENIUM_USE', defaultValue: false,description: 'Selenium Enabled?');
+		string(name: 'NODES', defaultValue: '1',description: 'No of nodes(Workers/Containers) required?');
+		string(name: 'ENVIMAGEURI', defaultValue: '995766112201.dkr.ecr.eu-west-1.amazonaws.com/priceservice-commercial',description: 'ECR Repo Name');
+		string(name: 'ENVTAG', defaultValue: 'service',description: 'ECR Tag ');
+		string(name: 'ENVURL', defaultValue: '6E951E21F576D1FD827CE21D894AA1FC.sk1.eu-west-1.eks.amazonaws.com',description: 'Environment API URL');
+		string(name: 'TOMAIL', defaultValue: 'atonu.ganguly@morrisonsplc.co.uk',description: 'Default Reciepient');
+	}
+	
+	stages {
+		stage('Test') {
+			parallel {
+				stage('Unit') {
+					agent {
+						node {
+							label 'docker-slave-cluster'
+						}
+					}
+					steps {
+						script {
+							echo "Unit Test: Jacoco";
+							try {
+								sh 'ls -l';
+								echo "Have GRADLE Test - here "
+								// sh 'mvn clean test jacoco:report';
+								try {
+									//Send mail of Test Report
+									sendTestReportMail();
+								} catch (error) {
+									echo "Jacoco Mail failed";
+								}
+							} catch (err) {
+								echo "Jacoco failed";
+							}
+						}
+					}
+				}
+				stage('Coverage') {
+					agent {
+						node {
+							label 'docker-slave-cluster'
+						}
+					}
+					when {
+						expression { return params.SONAR_USE;	}
+					}
+					steps {
+						script {
+							echo "Coverage Test: Sonar";
+							try {
+							  echo "Have Gradle sonar scanning"
+							    //sh 'mvn clean sonar:sonar -Dsonar.host.url=http://localhost:9000'
+						/*	sh '''
+						    #   docker run -d --name sonarqube -p 9000:9000 sonarqube
+						       mvn sonar:sonar
+						    ''' */
+							} catch (err) {
+								echo "Sonar failed";
+							}
+						}
+
+					}
+				}
+
+			}
+
+		}
+
+		stage('Build') {
+			agent {
+				node {
+					label 'docker-slave-cluster'
+				}
+			}
+			options {
+				skipDefaultCheckout true;
+			}
+			steps {
+				script {
+					echo "Code build";
+					sh 'gradle build'  // NCK: Identify the best approach to build gradle
+				//	sh 'mvn clean package -Dmaven.test.skip=true sonar:sonar -Dsonar.host.url=http://localhost:9000'
+				//	sh 'mvn clean package -DskipTests';
+				}
+				//archiving artifacts
+				archiveArtifacts artifacts: 'target/*.jar, ops/docker/*,  ops/ecs**/, config/*', fingerprint: true;
+			}
+		}
+
+		stage('Package') {
+			agent {
+				node {
+					label 'docker-slave-cluster'
+				}
